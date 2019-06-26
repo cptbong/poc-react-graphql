@@ -18,3 +18,12 @@ export const TOGLE_TODO = gql`
     }
   }
 `;
+
+export const REMOVE_TODO = gql`
+  mutation deleteToDoList($ID: ID!) {
+    deleteToDoList(id: $ID){
+      completedYn
+      itemName
+    }
+  }
+`;

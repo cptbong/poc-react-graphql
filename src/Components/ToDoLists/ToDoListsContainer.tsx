@@ -1,7 +1,7 @@
 import React from 'react';
-import { TO_DO_LIST, TOGLE_TODO } from './ToDoListsQL';
+import { TO_DO_LIST, TOGLE_TODO, REMOVE_TODO } from './ToDoListsQL';
 import ToDoListsPresenter from './ToDoListsPresenter';
-import { Query, Mutation, MutationFn } from 'react-apollo';
+import { Query, Mutation } from 'react-apollo';
 
 class ToDoListContainer extends React.Component {
   public state = {
@@ -9,7 +9,6 @@ class ToDoListContainer extends React.Component {
     completedYn: false,
     checked: false,
   };
-  public completeMutation: MutationFn;
 
   public render() {
     return (
@@ -17,41 +16,50 @@ class ToDoListContainer extends React.Component {
         {({ loading, error, data }) => {
           if (loading) return 'Loading...';
           if (error) return `Error! ${error.message}`;
-          console.log(data);
-          console.log(data.allToDoLists);
 
           return (
             <Mutation
               mutation={TOGLE_TODO}
-              variables={{
-                ID: this.state.id,
-                completedYn: this.state.completedYn,
-              }}>
+              refetchQueries={[{ query: TO_DO_LIST }]}
+            >
               {(completeMutation, { loading }) => {
-                this.completeMutation = completeMutation;
                 return (
-                  <ToDoListsPresenter
-                    allToDoLists={data.allToDoLists}
-                    checked={this.state.checked}
-                    toggleChange={this.toggleChnage}
-                  />
-                );
+                  <Mutation
+                    mutation={REMOVE_TODO}
+                    refetchQueries={[{ query: TO_DO_LIST }]}
+                  >
+                    {(deleteToDoList, { loading }) => {
+                      return (
+                        <ToDoListsPresenter
+                          allToDoLists={data.allToDoLists}
+                          completeMutation={completeMutation}
+                          deleteToDoList={deleteToDoList}
+                        />
+                      );
+                    }}
+                  </Mutation>
+                )
               }}
               </Mutation>
-
           );
         }}
         </Query>
     );
   }
 
-  public toggleChnage: React.ChangeEventHandler<any> = (event) => {
-    event.preventDefault();
-    this.setState({
-      id: event.target.id,
-      completedYn: !this.state.completedYn,
-    }, () => this.completeMutation());
-  }
+  // public toggleChnage: React.ChangeEventHandler<any> = (event) => {
+  //   event.preventDefault();
+  //   this.setState({
+  //     id: event.target.id,
+  //     completedYn: event.target.checked,
+  //   }, () => {
+  //       this.completeMutation()
+  //   });
+  // }
+
+  // public deleteToDoList = (id: string) => {
+  //   console.log(id);
+  // }
 }
 
 export default ToDoListContainer;

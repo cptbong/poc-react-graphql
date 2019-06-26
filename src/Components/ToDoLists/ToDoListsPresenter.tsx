@@ -1,27 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { MutationFn } from 'react-apollo';
 
 interface IProps {
   allToDoLists: [{ id: string, itemName: string, completedYn: boolean }];
-  checked: boolean;
-  toggleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  completeMutation: MutationFn;
+  deleteToDoList: MutationFn;
 }
 
-const remove = (index: number, itemName: string) => {
-  console.log('remove');
-};
-
-// // const newElement: React.FormEventHandler<HTMLFormElement> = (event) => {
-// const toggleChnage: React.ChangeEventHandler<any> = (event) => {
-//   console.log(event);
-//   console.log(event.target);
-//   console.log(event.target.id);
-// };
-
-const ToDoListsPresenter: React.SFC<IProps> = ({
+const ToDoListsPresenter: React.StatelessComponent<IProps> = ({
   allToDoLists,
-  checked,
-  toggleChange }) => {
+  completeMutation,
+  deleteToDoList }) => {
   return (
     <>
       <svg style={{ display: 'none' }}>
@@ -38,7 +28,12 @@ const ToDoListsPresenter: React.SFC<IProps> = ({
               id={todo.id}
               className="vh"
               checked={todo.completedYn ? true : false}
-              onChange={toggleChange}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                completeMutation({ variables: {
+                  ID: event.target.id,
+                  completedYn: event.target.checked,
+                }});
+              }}
             />
             <label htmlFor={todo.id}>
               <span className="tick"></span>
@@ -47,7 +42,9 @@ const ToDoListsPresenter: React.SFC<IProps> = ({
               </Link>
             </label>
             <button onClick={(event: React.MouseEvent<HTMLElement>) => {
-              remove(index, todo.itemName);
+              deleteToDoList({ variables: {
+                ID: todo.id,
+              }});
             }}>
               <svg><use xlinkHref="#bin-icon"></use></svg>
             </button>
